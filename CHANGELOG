@@ -1,0 +1,54 @@
+2021-09-21
+- Add try/except block to fix initial run of device settings
+
+2021-09-09
+- Update config file with new list variables
+- Add version check for enabling ciphers
+- Add check for config needing to be committed
+- Add section to get device config settings for check
+
+2021-07-12
+- Add sections to enable multi-vsys and check status
+- Update config file with new multi-vsys option
+- Update test file for additional test cases
+
+2021-05-12
+- Update email in Dockerfile
+
+2021-03-10
+- Add try/except around connection to device
+- Add additional output if commit or upgrade fails
+
+2021-02-25
+- Add missing docstrings
+- Update docstring documentation
+- Fix pylint issues
+
+2021-01-13
+- Fix commit after remediating ciphers
+- Add validation if firewall upgrade needs to take place
+- Add validation if content upgrade needs to take place
+- Add validation if setting ciphers needs to take place
+
+2021-01-12
+- Add Docker files for easier deployment
+
+2020-11-05
+- Update config file with instructions
+- Add logic to handle standalone or HA clusters
+
+2020-11-04
+- Add sections to update content/app-id
+- Add sections to update HA configs
+- Add sections to remediate SSH ciphers
+- Add section to upgrade device
+- Fix NTP config issue
+- Fix commit issue
+- Update user notification
+- Add variables to config file
+
+2020-10-07
+- Initial commit
+- Remove duplication from script
+- Add section to fetch licenses
+- Update firewall connection to use username and password instead of api key

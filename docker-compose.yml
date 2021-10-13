@@ -1,0 +1,5 @@
+version: '3'
+services:
+  python:
+    container_name: pan_fw_build
+    build: .

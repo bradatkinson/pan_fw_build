@@ -1,0 +1,2 @@
+pandevice
+pan-os-python
