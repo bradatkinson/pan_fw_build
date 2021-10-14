@@ -240,8 +240,10 @@ def fetch_licenses(fw_conn):
     try:
         fw_conn.fetch_licenses_from_license_server()
         print('Licenses retrieved from Palo Alto Networks')
+        return True
     except:
         print('WARNING: Not able to retrieve licenses!')
+        return False
 
 
 def enable_multivsys(fw_conn):
@@ -868,7 +870,7 @@ def main():
         if config.multivsys == 'on':
             configuring_multivsys(fw_conn)
 
-        fetch_licenses(fw_conn)
+        is_licensed = fetch_licenses(fw_conn)
 
         system_info_results = get_system_info(fw_conn)
         app_version, panos_version = process_system_info(system_info_results)
@@ -911,7 +913,8 @@ def main():
         if panos_version == config.version:
             print('Firewall already at PAN-OS version {}'.format(config.version))
         else:
-            upgrade_device(fw_conn)
+            if is_licensed:
+                upgrade_device(fw_conn)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,6 @@
+2021-10-14
+- Fix upgrade issue with no active licensing
+
 2021-09-21
 - Add try/except block to fix initial run of device settings
 
