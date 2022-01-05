@@ -208,24 +208,31 @@ def remove_default_setting(fw_conn, item_list, needs_commit):
     Returns:
         needs_commit (bool): True or false if configuration needs committing
     """
+    print('Removing factory default configs...')
     for item in item_list:
         if item == 'default':
             fw_conn.add(network.VirtualRouter(name='default')).delete()
+            print('-- Removed: Default Virtual Router')
             needs_commit = True
         elif item == 'default-vwire':
             fw_conn.add(network.VirtualWire(name='default-vwire')).delete()
+            print('-- Removed: Default Vwire')
             needs_commit = True
         elif item == 'untrust':
             fw_conn.add(network.Zone(name='untrust')).delete()
+            print('-- Removed: Default Untrust Zone')
             needs_commit = True
         elif item == 'trust':
             fw_conn.add(network.Zone(name='trust')).delete()
+            print('-- Removed: Default Trust Zone')
             needs_commit = True
         elif item == 'ethernet1/1':
             fw_conn.add(network.interface(name='ethernet1/1')).delete()
+            print('-- Removed: Default Ethernet1/1 Settings')
             needs_commit = True
         elif item == 'ethernet1/2':
             fw_conn.add(network.interface(name='ethernet1/2')).delete()
+            print('-- Removed: Default Ethernet1/2 Settings')
             needs_commit = True
 
     return needs_commit
@@ -822,8 +829,9 @@ def main():
         fw_conn = connect_device(fw_ip, num)
         device_settings_results = get_device_config_settings(fw_conn)
         device_setttings_list = process_device_config_settings(device_settings_results)
+        system_info_results = get_system_info(fw_conn)
+        app_version, panos_version = process_system_info(system_info_results)
         needs_commit = set_device_config_settings(fw_conn, num, device_setttings_list, needs_commit)
-        print('Removing factory default configs...')
 
         # Security Rules
         rule_list, rulebase = get_security_rulebase(fw_conn)
@@ -857,14 +865,28 @@ def main():
         interface_list = process_xml(interfaces_xml, interface_path)
         needs_commit = remove_default_setting(fw_conn, interface_list, needs_commit)
 
+        if len(config.paloalto['firewall_ip']) == 2:
+            ha_state_results = check_ha_state(fw_conn)
+            ha_state = process_ha_state(ha_state_results)
+
+            if ha_state == 'no':
+                configure_ha(fw_conn, num)
+                needs_commit = True
+            elif ha_state == 'yes':
+                print('HA already enabled')
+
+        if panos_version.split('.')[0] == '10':
+            print('Ciphers handled by Panorama')
+        else:
+            remediate_ciphers(fw_conn)
+            needs_commit = True
+
         if needs_commit:
-            print('-- Removed')
             print('Committing configs...')
             commit_jobid = commit_config(fw_conn)
             check_job(fw_conn, commit_jobid)
             print('-- Committed')
         else:
-            print('-- Already removed')
             print('No commit needed!')
 
         if config.multivsys == 'on':
@@ -872,8 +894,6 @@ def main():
 
         is_licensed = fetch_licenses(fw_conn)
 
-        system_info_results = get_system_info(fw_conn)
-        app_version, panos_version = process_system_info(system_info_results)
         content_updates_results = check_content_updates(fw_conn)
         max_app_version = process_content_updates(content_updates_results)
 
@@ -895,20 +915,6 @@ def main():
             install_jobid = process_jobid(install_results)
             check_job(fw_conn, install_jobid)
             print('-- Installed')
-
-        if len(config.paloalto['firewall_ip']) == 2:
-            ha_state_results = check_ha_state(fw_conn)
-            ha_state = process_ha_state(ha_state_results)
-
-            if ha_state == 'no':
-                configure_ha(fw_conn, num)
-            elif ha_state == 'yes':
-                print('HA already enabled')
-
-        if panos_version.split('.')[0] == '10':
-            print('Ciphers handled by Panorama')
-        else:
-            remediate_ciphers(fw_conn)
 
         if panos_version == config.version:
             print('Firewall already at PAN-OS version {}'.format(config.version))
