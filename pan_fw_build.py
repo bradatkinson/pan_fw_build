@@ -780,7 +780,7 @@ def restart_service(fw_conn):
         status_dict = item.attrib
         status = status_dict.get('status')
         message = item.find('./result/member').text
-        print('-- {}...  {}'.format(message, status))
+        print('{}...  {}'.format(message, status))
 
 
 def remediate_ciphers(fw_conn):
@@ -875,12 +875,6 @@ def main():
             elif ha_state == 'yes':
                 print('HA already enabled')
 
-        if panos_version.split('.')[0] == '10':
-            print('Ciphers handled by Panorama')
-        else:
-            remediate_ciphers(fw_conn)
-            needs_commit = True
-
         if needs_commit:
             print('Committing configs...')
             commit_jobid = commit_config(fw_conn)
@@ -915,6 +909,11 @@ def main():
             install_jobid = process_jobid(install_results)
             check_job(fw_conn, install_jobid)
             print('-- Installed')
+
+        if panos_version.split('.')[0] == '10':
+            print('Ciphers handled by Panorama')
+        else:
+            remediate_ciphers(fw_conn)
 
         if panos_version == config.version:
             print('Firewall already at PAN-OS version {}'.format(config.version))
